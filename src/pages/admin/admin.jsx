@@ -280,7 +280,7 @@ const useStyles = makeStyles({
             null
           }
           <Header/>
-          <div className='px-5'>
+          <div className='px-5 martgintop'>
               <ButtonUi onClick={toggle} className='my-3' >
                   Add Data
               </ButtonUi>

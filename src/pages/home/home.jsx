@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Homescreen from '../../assets/Homescreen.webp'
+import Homescreen from '../../assets/home.webp'
 import TravelBook from '../../assets/travelbook.svg'
 import Travelers from '../../assets/travelers.svg'
 import Header from '../../components/Header'
@@ -12,7 +12,7 @@ class Home extends Component {
         return (
             <div>
                 <Header/>
-                <div style={{width:'100%', height:'90vh'}}>
+                <div style={{width:'100%', height:'90vh'}} className='martgintop'>
                     <img src={Homescreen} style={{objectFit:'cover'}} width='100%' height='100%'/>
                 </div>
                 <div className='text-white d-flex align-items-center px-5' style={{height:'8vh',backgroundColor:'#afafaf',justifyContent:"space-between"}}>
@@ -22,7 +22,7 @@ class Home extends Component {
                     <div>
                         <Link to='/products'>
                             <ButtonUi>
-                                Lihat Promo
+                                Lihat Product
                             </ButtonUi>
                         </Link>
                     </div>

@@ -11,13 +11,19 @@
       "username": "admin",
       "password": "root",
       "role": "admin"
+    },
+    {
+      "username": "green",
+      "password": "abc123",
+      "role": "user",
+      "id": 3
     }
   ],
   "products": [
     {
       "namatrip": "go to lombok",
       "gambar": "https://media.nomadicmatt.com/baliguide.jpg",
-      "tanggalmulai": 1599782400000,
+      "tanggalmulai": 1600732800000,
       "tanggalberakhir": 1600905600000,
       "harga": "200000",
       "deskripsi": "jl. jlan ke lombok aja deh",
@@ -35,7 +41,7 @@
     {
       "namatrip": "ke pantai yukk",
       "gambar": "https://image.cermati.com/q_70/iwa9toftcplkt1bhoy8z",
-      "tanggalmulai": 1599868800000,
+      "tanggalmulai": 1600992000000,
       "tanggalberakhir": 1600992000000,
       "harga": "200000",
       "deskripsi": "ini keren loo",
@@ -44,8 +50,8 @@
     {
       "namatrip": "liburan ke pulau",
       "gambar": "https://assets-a1.kompasiana.com/items/album/2019/12/27/images-5e050cec097f36747b353fb2.jpeg",
-      "tanggalmulai": 1599868800000,
-      "tanggalberakhir": 1600387200000,
+      "tanggalmulai": 1600905600000,
+      "tanggalberakhir": 1601424000000,
       "harga": "500000",
       "deskripsi": "pergi liburan kesini emang asyik bangett",
       "id": 4
@@ -53,14 +59,20 @@
     {
       "namatrip": "ke pula seribu",
       "gambar": "https://assets-a1.kompasiana.com/items/album/2019/04/14/liburan-3-5cb2c933a8bc151cd14d0962.jpg",
-      "tanggalmulai": 1599868800000,
-      "tanggalberakhir": 1600041600000,
+      "tanggalmulai": 1600819200000,
+      "tanggalberakhir": 1601424000000,
       "harga": "999000",
       "deskripsi": "ayoo ke pulau seribu",
       "id": 5
     }
   ],
   "carts": [
+    {
+      "userId": 1,
+      "productId": 4,
+      "qty": 2,
+      "id": 1
+    }
   ],
   "transactions": [
     {
@@ -72,12 +84,36 @@
       "id": 2
     },
     {
-      "status": "WaitingAdmin",
+      "status": "Completed",
       "userId": 1,
       "tanggalPembayaran": 1600229071836,
       "metode": "upload",
       "buktipembayaran": "https://www.pakaiatm.com/wp-content/uploads/2020/03/Contoh-Bukti-Transfer-BRI-Asli-atau-Palsu.jpg",
       "id": 3
+    },
+    {
+      "status": "Completed",
+      "userId": 1,
+      "tanggalPembayaran": 1600438527417,
+      "metode": "cc",
+      "buktipembayaran": "32312312321321321323",
+      "id": 4
+    },
+    {
+      "status": "Completed",
+      "userId": 1,
+      "tanggalPembayaran": 1600510255731,
+      "metode": "cc",
+      "buktipembayaran": "4012888888881881",
+      "id": 5
+    },
+    {
+      "status": "WaitingAdmin",
+      "userId": 1,
+      "tanggalPembayaran": 1600521748562,
+      "metode": "upload",
+      "buktipembayaran": "https://ecs7.tokopedia.net/img/cache/700/product-1/2020/1/21/5677080/5677080_cf2ef623-8e05-4c90-80ec-0a6edb107d3e_648_648.jpg",
+      "id": 6
     }
   ],
   "transactionsdetails": [
@@ -115,6 +151,48 @@
       "price": 999000,
       "qty": 1,
       "id": 7
+    },
+    {
+      "transactionId": 4,
+      "productId": 1,
+      "price": 200000,
+      "qty": 6,
+      "id": 8
+    },
+    {
+      "transactionId": 4,
+      "productId": 4,
+      "price": 500000,
+      "qty": 4,
+      "id": 9
+    },
+    {
+      "transactionId": 4,
+      "productId": 5,
+      "price": 999000,
+      "qty": 2,
+      "id": 10
+    },
+    {
+      "transactionId": 5,
+      "productId": 4,
+      "price": 500000,
+      "qty": 2,
+      "id": 11
+    },
+    {
+      "transactionId": 6,
+      "productId": 4,
+      "price": 500000,
+      "qty": 2,
+      "id": 12
+    },
+    {
+      "transactionId": 6,
+      "productId": 5,
+      "price": 999000,
+      "qty": 2,
+      "id": 13
     }
   ]
 }

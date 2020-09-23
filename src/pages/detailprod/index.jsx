@@ -31,22 +31,54 @@ class DetailProd extends Component {
             alert('jangan beli bro inget admin')
         }else if(this.props.role==='user'){
             if(this.state.qty.current.value){
-                Axios.post(`${API_URL}/carts`,{
-                    userId:this.props.id,
-                    productId:this.state.products.id,
-                    qty: parseInt(this.state.qty.current.value)
-                }).then(()=>{
-                    Axios.get(`${API_URL}/carts`,{
-                        params:{
+                console.log(this.state.products.id)
+                Axios.get(`${API_URL}/carts`,{
+                    params:{
+                        userId:this.props.id,
+                        productId:this.state.products.id
+                    }
+                }).then((res)=>{
+                    if(res.data.length){
+                        console.log(res.data)
+                        Axios.patch(`${API_URL}/carts/${res.data[0].id}`,{
+                            qty:parseInt(this.state.qty.current.value) + parseInt(res.data[0].qty)
+                        }).then(()=>{
+                            Axios.get(`${API_URL}/carts`,{
+                                params:{
+                                    userId:this.props.id,
+                                    _expand:'product'
+                                }
+                            }).then((res1)=>{
+                                this.props.AddcartAction(res1.data)
+                                alert('berhasil masuk cart')
+                            }).catch((err)=>{
+                                console.log(err)
+                            })
+                        }).catch((err)=>{
+                            console.log(err)
+                        })
+                    }else{
+                        Axios.post(`${API_URL}/carts`,{
                             userId:this.props.id,
-                            _expand:'product'
-                        }
-                    }).then((res)=>{
-                        this.props.AddcartAction(res.data)
-                        alert('berhasil masuk cart')
-                    }).catch((err)=>{
-                        console.log(err)
-                    })
+                            productId:this.state.products.id,
+                            qty: parseInt(this.state.qty.current.value)
+                        }).then(()=>{
+                            Axios.get(`${API_URL}/carts`,{
+                                params:{
+                                    userId:this.props.id,
+                                    _expand:'product'
+                                }
+                            }).then((res)=>{
+                                this.props.AddcartAction(res.data)
+                                alert('berhasil masuk cart')
+                            }).catch((err)=>{
+                                console.log(err)
+                            })
+                        })
+
+                    }
+                }).catch((err)=>{
+                    console.log(err)
                 })
             }else{
                 toast('salah broo harusnya qty disii', {
@@ -90,28 +122,31 @@ class DetailProd extends Component {
                     </ModalFooter>
                 </Modal>
                 <Header/>
-                <Breadcrumb className='tranparant m-0 px-2'>
-                    <BreadcrumbItem ><Link className='link-class' to="/">Home</Link></BreadcrumbItem>
-                    <BreadcrumbItem ><Link className='link-class' to="/products">Products</Link></BreadcrumbItem>
-                    <BreadcrumbItem active >{this.state.products.namatrip}</BreadcrumbItem>
-                </Breadcrumb>
-                <div className="pt-3 px-4">
-                    <div style={{width:'100%',height:400,}}>
-                        <img src={products.gambar} style={{objectFit:'cover',objectPosition:'bottom'}} height='100%' width='100%' alt={"foo"}/>
+                <div className='martgintop'>
+                    <Breadcrumb className='tranparant m-0 px-2 '>
+                        <BreadcrumbItem ><Link className='link-class' to="/">Home</Link></BreadcrumbItem>
+                        <BreadcrumbItem ><Link className='link-class' to="/products">Products</Link></BreadcrumbItem>
+                        <BreadcrumbItem active >{this.state.products.namatrip}</BreadcrumbItem>
+                    </Breadcrumb>
+                    <div className="pt-3 px-4">
+                        <div style={{width:'100%',height:400,}}>
+                            <img src={products.gambar} style={{objectFit:'cover',objectPosition:'bottom'}} height='100%' width='100%' alt={"foo"}/>
+                        </div>
+                        <h5 className='mt-2'>Tanggal mulai :{dateformat(products.tanggalmulai)}</h5>
+                        <h5 className='mt-2'>Tanggal berakhir :{dateformat(products.tanggalberakhir)}</h5>
+                        <h2 className='mt-2'>
+                            {products.namatrip}
+                        </h2>
+                        <label>jumlah tiket</label><br/>
+                        <input type="number" className={'form-control'} placeholder='qty' style={{width:200}} ref={this.state.qty}/>
+                        <ButtonUi className='mt-2' onClick={this.onAddToCart}>
+                            Add to cart
+                        </ButtonUi>
+                        <div className=' mt-3 mb-5'>
+                            {products.deskripsi}
+                        </div>
                     </div>
-                    <h5 className='mt-2'>Tanggal mulai :{dateformat(products.tanggalmulai)}</h5>
-                    <h5 className='mt-2'>Tanggal berakhir :{dateformat(products.tanggalberakhir)}</h5>
-                    <h2 className='mt-2'>
-                        {products.namatrip}
-                    </h2>
-                    <label>jumlah tiket</label><br/>
-                    <input type="number" className={'form-control'} placeholder='qty' style={{width:200}} ref={this.state.qty}/>
-                    <ButtonUi className='mt-2' onClick={this.onAddToCart}>
-                        Add to cart
-                    </ButtonUi>
-                    <div className=' mt-3 mb-5'>
-                        {products.deskripsi}
-                    </div>
+
                 </div>
             </div>
         );

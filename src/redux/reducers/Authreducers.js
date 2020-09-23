@@ -38,6 +38,8 @@ export default (state=INITIAL_STATE,action)=>{
             return{...state,error:''} 
         case ADDCART:
             return{...state,cart:action.cart}
+        case 'LOGOUT':
+            return INITIAL_STATE
         default:
             return state
     }

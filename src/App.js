@@ -13,7 +13,10 @@ import {API_URL} from './helpers/idrformat'
 import Axios from 'axios'
 import Cart from './pages/cart'
 import DetailProd from './pages/detailprod'
+import Register from './pages/register'
 import {toast} from 'react-toastify'
+import AdminPay from './pages/adminpayment'
+import History from './pages/history'
 import 'react-toastify/dist/ReactToastify.css' 
 // umum : register
 // user : history,
@@ -23,7 +26,7 @@ function App(props) {
 
   const [loading,setloading]=useState(true)
 
-  useEffect(()=>{
+  useEffect( ()=>{
     var id=localStorage.getItem('id')
     if(id){ 
       Axios.get(`${API_URL}/users/${id}`)
@@ -35,9 +38,12 @@ function App(props) {
           }
         }).then((res1)=>{
             props.LoginFunc(res.data,res1.data)
+            // setloading(false)
         }).catch((err)=>{
             console.log(err)
-        }).finally(()=>{
+            // setloading(false)
+        })
+        .finally(()=>{
           setloading(false)
         })
       }).catch((err)=>{
@@ -71,6 +77,9 @@ function App(props) {
         <Route exact path='/products' component={ListProd}/>
         <Route path='/products/:id' component={DetailProd}/>
         <Route exact path='/cart' component={Cart}/>
+        <Route exact path='/register' component={Register}/>
+        <Route exact path='/adminPay' component={AdminPay}/>
+        <Route exact path='/history' component={History}/>
         {renderProtectedroutesadmin()}
         <Route path='*' component={NotFound} />
       </Switch>

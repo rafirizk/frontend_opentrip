@@ -15,7 +15,11 @@ export const Clearfunc=()=>{
     }
 }
 
-
+export const LogOutfunc=()=>{
+    return{
+        type:'LOGOUT'
+    }
+}
 export const AddcartAction=(cart)=>{
     return{
         type:ADDCART,

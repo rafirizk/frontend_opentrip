@@ -2,7 +2,7 @@ import React, { Component, createRef } from 'react';
 import Header from '../../components/Header'
 import {connect} from 'react-redux'
 import Axios from 'axios'
-import { API_URL, priceFormatter } from '../../helpers/idrformat';
+import { API_URL, priceFormatter,credit } from '../../helpers/idrformat';
 import Notfound from './../notfound'
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -15,6 +15,7 @@ import TableFooter from '@material-ui/core/TableFooter';
 import ButtonUi from './../../components/button'
 import {Modal,ModalHeader,ModalBody,ModalFooter} from 'reactstrap'
 import {AddcartAction} from './../../redux/Actions'
+
 class Cart extends Component {
     state = {
         cart:[],
@@ -74,7 +75,12 @@ class Cart extends Component {
         if(pilihan==='1'){
             this.onbayarpakebukti()
         }else if(pilihan==='2'){
-            this.onbayarpakeCC()
+            if(credit(parseInt(this.state.cc.current.value))){
+                // alert('cc bener')
+                this.onbayarpakeCC()
+            }else{
+                alert('bukan cc')
+            }
         }else{
             alert('pilih dulu tipe pembayarannya bro')
         }
@@ -224,7 +230,7 @@ class Cart extends Component {
         if(this.props.role==='user') {
             return (
                 <div>
-                    <Modal isOpen={this.state.isOpen} toggle={()=>this.setState({isOpen:false})}>
+                    <Modal style={{marginTop:80}} isOpen={this.state.isOpen} toggle={()=>this.setState({isOpen:false})}>
                         <ModalHeader toggle={()=>this.setState({isOpen:false})}>Pembayaran</ModalHeader>
                         <ModalBody>
                             <select onChange={(e)=>this.setState({pilihan:e.target.value})} className='form-control' defaultValue={0} >
@@ -252,7 +258,7 @@ class Cart extends Component {
                         </ModalFooter>
                     </Modal>
                     <Header/>
-                    <div className=' pt-3' style={{paddingLeft:'10%',paddingRight:'10%'}}>
+                    <div className=' pt-3 martgintop' style={{paddingLeft:'10%',paddingRight:'10%'}}>
                         <Paper >
                             <TableContainer >
                                 <Table stickyHeader>

@@ -2,11 +2,11 @@ import React, { Component,createRef } from 'react';
 import './Login.css'
 import Foto from './../../assets/Homescreen.webp'
 import { withStyles } from '@material-ui/core/styles';
-import Axios from 'axios'
+// import Axios from 'axios'
 import TextField from '@material-ui/core/TextField';
-import {API_URL} from './../../helpers/idrformat'
+// import {API_URL} from './../../helpers/idrformat'
 import {connect} from 'react-redux';
-import {Redirect} from 'react-router-dom'
+import {Redirect,Link} from 'react-router-dom'
 import {LoginFunc,LoginThunk,Clearfunc} from './../../redux/Actions'
 const Styles={
     root:{
@@ -129,6 +129,12 @@ class Login extends Component {
                             <button disabled={this.props.Auth.isLoading} onClick={this.OnLoginClick} className='px-3 py-2 rounded text-white' style={{border:'white 1px solid',backgroundColor:'transparent'}}>
                                 Login
                             </button>
+                        </div>
+                        <div>
+                            No Account ? 
+                            <Link to='/register'>
+                               Sign Up
+                            </Link> 
                         </div>
                     </div>
                 </div>
