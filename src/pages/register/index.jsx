@@ -10,7 +10,7 @@ import {Redirect,Link} from 'react-router-dom'
 import {LoginFunc,LoginThunk,Clearfunc} from './../../redux/Actions'
 import {toast} from 'react-toastify'
 import Axios from 'axios';
-import { API_URL } from '../../helpers/idrformat';
+import { API_URL, API_URL_BE } from '../../helpers/idrformat';
 const Styles={
     root:{
         'input': {
@@ -51,47 +51,67 @@ class Register extends Component {
         username:createRef(),
         password:createRef(),
         confirmpass:createRef(),
+        email: createRef(),
         alert:''
     }
 
     OnLoginClick=()=>{
-        const {username,password,confirmpass}=this.state
+        const {username,password,confirmpass, email}=this.state
         var username1=username.current.value
         var password1=password.current.value
         var conpass=confirmpass.current.value
+        var email1 = email.current.value
         // this.props.LoginThunk(username1,password1)
         if(this.chechpass(password1).status){
             if(password1==conpass){
-                Axios.get(`${API_URL}/users`,{
-                    params:{
-                        username:username1
-                    }
+                Axios.post(`${API_URL_BE}/auth/register`, {
+                    username: username1,
+                    email: email1,
+                    password:password1
+                }).then((res) => {
+                    localStorage.setItem('id', res.data.id)
+                    this.props.LoginFunc(res.data, [])
+                }).catch((err) => {
+                    toast.error(err.response.data.message, {
+                        position: "top-left",
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        draggable: true,
+                        progress: undefined,
+                    });
                 })
-                .then((res)=>{
-                    if(res.data.length){
-                        toast.error('username telah dipakai', {
-                            position: "top-left",
-                            autoClose: 2000,
-                            hideProgressBar: false,
-                            closeOnClick: true,
-                            draggable: true,
-                            progress: undefined,
-                        });
-                    }else{
-                        Axios.post(`${API_URL}/users`,{
-                            username:username1,
-                            password:password1,
-                            role:'user'
-                        }).then((res1)=>{
-                            localStorage.setItem('id',res1.data.id)
-                            this.props.LoginFunc(res1.data,[])
-                        }).catch((err)=>{
-                            console.log(err)
-                        })
-                    }
-                })
+                // Axios.get(`${API_URL}/users`,{
+                //     params:{
+                //         username:username1
+                //     }
+                // })
+                // .then((res)=>{
+                //     if(res.data.length){
+                //         toast.error('username telah dipakai', {
+                //             position: "top-left",
+                //             autoClose: 2000,
+                //             hideProgressBar: false,
+                //             closeOnClick: true,
+                //             draggable: true,
+                //             progress: undefined,
+                //         });
+                //     }else{
+                //         Axios.post(`${API_URL}/users`,{
+                //             username:username1,
+                //             password:password1,
+                //             role:'user',
+                //             email: email1
+                //         }).then((res1)=>{
+                //             localStorage.setItem('id',res1.data.id)
+                //             this.props.LoginFunc(res1.data,[])
+                //         }).catch((err)=>{
+                //             console.log(err)
+                //         })
+                //     }
+                // })
             }else{
-                toast.error('confirmasi dan password harus sama', {
+                toast.error('konfirmasi dan password harus sama', {
                     position: "top-left",
                     autoClose: 2000,
                     hideProgressBar: false,
@@ -171,6 +191,23 @@ class Register extends Component {
                                 className={classes.root} 
                                 inputRef={this.state.username} 
                                 label="Username" 
+                                fullWidth='true' 
+                                variant="outlined" 
+                                size='small' 
+                            />
+                        </div>
+                        <div className='mt-3'>
+                            <TextField 
+                                inputProps={{ 
+                                    className:'text-white login-placeholder'
+                                }} 
+                                InputLabelProps={{
+                                    className:'text-white'
+                                }} 
+                                className={classes.root} 
+                                inputRef={this.state.email}
+                                type = "email" 
+                                label="Email" 
                                 fullWidth='true' 
                                 variant="outlined" 
                                 size='small' 

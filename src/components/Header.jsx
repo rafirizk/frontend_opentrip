@@ -14,6 +14,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Badge from '@material-ui/core/Badge';
 import {LogOutfunc} from './../redux/Actions'
 import useScrollTrigger from '@material-ui/core/useScrollTrigger';
+import {API_URL_BE} from '../helpers/idrformat'
 
 import Slide from '@material-ui/core/Slide';
 const useStyles = makeStyles((theme) => ({
@@ -136,10 +137,10 @@ function ButtonAppBar({username,isLogin,role,cart,LogOutfunc}) {
                         return(
                           <MenuItem key={index} className='p-3'>
                             <div style={{height:50,width:50}} className='mr-3'>
-                              <img src={val.product.gambar} width='100%' height='100%' alt={val.id}/>
+                              <img src={API_URL_BE + val.banner} width='100%' height='100%' alt={val.id}/>
                             </div>
                             <div className='mr-3'>
-                              {val.product.namatrip} <br/>
+                              {val.name} <br/>
                               qty :  {val.qty}
                             </div>
                           </MenuItem>

@@ -10,8 +10,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {MdDeleteForever} from 'react-icons/md'
 import {BiEdit} from 'react-icons/bi'
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import {priceFormatter, API_URL} from '../../helpers/idrformat'
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, CustomInput } from 'reactstrap';
+import {priceFormatter, API_URL, API_URL_BE} from '../../helpers/idrformat'
 import ButtonUi from './../../components/button'
 import axios from 'axios'
 import {connect} from 'react-redux'
@@ -30,18 +30,21 @@ const useStyles = makeStyles({
   const classes = useStyles();
   const [modal, setModal] = useState(false);
   const [modaledit, setModaledit] = useState(false);
+  const [banner, setBanner] = useState(null)
+  const [photo, setPhoto] = useState([null])
+  const [modalPhoto, setModalPhoto] = useState(false)
+  const [productId, setProductId] = useState(0)
 
   const [addform,setaddform]=useState({
     namaTrip:useRef(),
-    gambar:useRef(),
     tanggalmulai:useRef(),
     tanggalberakhir:useRef(),
     harga:'',
-    descripsi:useRef()
+    descripsi:useRef(),
+    capacity: useRef()
   })
   const [editform,seteditform]=useState({
     namaTrip:useRef(),
-    gambar:useRef(),
     tanggalmulai:useRef(),
     tanggalberakhir:useRef(),
     harga:'',
@@ -52,7 +55,7 @@ const useStyles = makeStyles({
 
   useEffect(()=>{
     const fetch=()=>{
-      axios.get(`${API_URL}/products`)
+      axios.get(`${API_URL_BE}/product`)
       .then((res)=>{
         setProduct(res.data)
         seteditform({...editform,harga:res.data[0].harga})
@@ -126,36 +129,54 @@ const useStyles = makeStyles({
   }
 
   const OnAdddataClick=()=>{
-    var namatrip = addform.namaTrip.current.value
-    var gambar = addform.gambar.current.value
-    var tanggalmulai=addform.tanggalmulai.current.value
-    var tanggalberakhir=addform.tanggalberakhir.current.value
-    var harga=addform.harga
-    var deskripsi=addform.descripsi.current.value
-    var obj={
-      namatrip,
-      gambar,
-      tanggalmulai:new Date(tanggalmulai).getTime(),
-      tanggalberakhir:new Date(tanggalberakhir).getTime(),
-      harga,
-      deskripsi
+    var formData = new FormData()
+    var options = {
+      headers:{
+          'Content-type':'multipart/form-data'
+      }
+  }
+    var name = addform.namaTrip.current.value
+    var tanggalmulai =addform.tanggalmulai.current.value
+    var tanggalberakhir =addform.tanggalberakhir.current.value
+    var price =addform.harga
+    var description =addform.descripsi.current.value
+    var capacity = addform.capacity.current.value
+    var data={
+      name,
+      start_date:new Date(tanggalmulai).getTime(),
+      end_date:new Date(tanggalberakhir).getTime(),
+      price,
+      description,
+      capacity
     }
-    if(obj.tanggalmulai>obj.tanggalberakhir || obj.tanggalmulai<new Date().getTime()){
+
+    formData.append('image', banner)
+    formData.append('data',JSON.stringify(data))
+
+    if(data.start_date>data.end_date || data.start_date<new Date().getTime()){
       console.log('data tidak boleh masuk')
     }else{
-      axios.post(`${API_URL}/products`,obj)
-      .then(()=>{
-        axios.get(`${API_URL}/products`)
-        .then((res)=>{
-          setProduct(res.data)
-          setaddform({...addform,harga:''})
-          setModal(false)
-        }).catch((err)=>{
-          console.log(err)
-        })
-      }).catch((err)=>{
+      axios.post(`${API_URL_BE}/product/add`, formData, options)
+      .then(res => {
+        console.log(res.data)
+        alert('Berhasil')
+        setModal(false)
+      }).catch(err => {
         console.log(err)
       })
+      // axios.post(`${API_URL}/products`,obj)
+      // .then(()=>{
+      //   axios.get(`${API_URL}/products`)
+      //   .then((res)=>{
+      //     setProduct(res.data)
+      //     setaddform({...addform,harga:''})
+      //     setModal(false)
+      //   }).catch((err)=>{
+      //     console.log(err)
+      //   })
+      // }).catch((err)=>{
+      //   console.log(err)
+      // })
     }
   }
 
@@ -207,28 +228,89 @@ const useStyles = makeStyles({
       return(
         <TableRow key={val.id}>
             <TableCell>{index+1}</TableCell>
-            <TableCell>{val.namatrip}</TableCell>
+            <TableCell>{val.name}</TableCell>
             <TableCell>
               <div style={{maxWidth:'200px'}}>
-                <img width='100%' height='100%' src={val.gambar} alt={val.namatrip}/>
+                <img width='100%' height='100%' src={API_URL_BE + val.banner} alt={val.name}/>
               </div>
             </TableCell>
-            <TableCell>{dateformat(val.tanggalmulai)}</TableCell>
-            <TableCell>{dateformat(val.tanggalberakhir)}</TableCell>
-            <TableCell>{priceFormatter(val.harga)}</TableCell>
-            <TableCell>{readMore(val.deskripsi)}</TableCell>
+            <TableCell>{dateformat(val.start_date)}</TableCell>
+            <TableCell>{dateformat(val.end_date)}</TableCell>
+            <TableCell>{priceFormatter(val.price)}</TableCell>
+            <TableCell>{val.capacity}</TableCell>
+            <TableCell>{readMore(val.description)}</TableCell>
             <TableCell>
               <span style={{fontSize:30}} className='text-danger mr-3'><MdDeleteForever/></span>
-              <span style={{fontSize:30}} onClick={()=>Oneditclick(index)} className='text-primary ml-3'><BiEdit/></span>  
+              <span style={{fontSize:30}} className='text-primary ml-3'><BiEdit/></span>
+              <button onClick={() => toggleAddPhoto(val.id)}>Add Photo</button>
             </TableCell>
         </TableRow>
       )
     })
   }
 
-  const toggle = () => setModal(!modal);
+  const toggle = () => {
+    setModal(!modal);
+    setBanner(null)
+  }
+
+  const toggleAddPhoto = (id) => {
+    setModalPhoto(!modalPhoto);
+    setPhoto([null])
+    if (id) {
+      setProductId(id)
+    }
+    // setBanner(null)
+  }
+
   const toggleedit = () => setModaledit(!modaledit);
 
+  const onInputFileChange = (e) => {
+    if(e.target.files[0]){
+      setBanner(e.target.files[0])
+    }else{
+      console.log('delete')
+      setBanner(null)
+    }
+  }
+
+  const onInputFilePhotoChange = (e, index) => {
+    if(e.target.files[0]){
+      console.log(e.target.files[0])
+      photo[index] = e.target.files[0]
+      setPhoto(photo)
+      AddPhoto()
+      console.log(photo)
+    }else{
+      let photo1 = photo
+      photo1.splice(index, 1, null)
+      setPhoto([...photo1])
+    }
+  }
+
+  const AddPhoto = () => {
+    setPhoto([...photo, null])
+  }
+
+  const onAddPhotoProduct = () => {
+    var formData = new FormData()
+    var options = {
+      headers:{
+        'Content-type':'multipart/form-data'
+      }
+    }
+    photo.forEach(val => {
+      formData.append('image', val)
+    })
+    formData.append('data', JSON.stringify({product_id: productId}))
+    axios.post(`${API_URL_BE}/product/addPhoto`, formData, options)
+    .then(res => {
+      console.log(res.data)
+      alert('Photo Uploaded')
+    }).catch(err => {
+      console.log(err)
+    })
+  }
   
     return (
         <>
@@ -236,7 +318,15 @@ const useStyles = makeStyles({
               <ModalHeader toggle={toggle}>Add data</ModalHeader>
               <ModalBody>
                  <input type='text' ref={addform.namaTrip} placeholder='Masukkan Nama' className='form-control mb-2'/>
-                 <input type='text' ref={addform.gambar} placeholder='Masukkan Gambar' className='form-control mb-2'/>
+                  <input type="file" className="form-control mb-2" onChange={onInputFileChange} />
+                  {
+                    banner ?
+                    <div>
+                      <img src={URL.createObjectURL(banner)} alt={addform.namaTrip} height="200" /> 
+                    </div>
+                    :
+                    null
+                  }
                  <label className='ml-1'>
                    Tanggal mulai
                  </label>
@@ -246,6 +336,7 @@ const useStyles = makeStyles({
                  </label>
                  <input type='date' ref={addform.tanggalberakhir} placeholder='tanggal berakhir' className='form-control mb-2'/>
                  <input type='text' onChange={onhargachange} placeholder='Rp....' value={addform.harga} className='form-control mb-2'/>
+                 <input type='number' ref={addform.capacity} placeholder='capacity' className='form-control mb-2'/>
                  <textarea className='form-control mb-2' ref={addform.descripsi} placeholder='deskripsi' cols="30" rows="7"></textarea>
               </ModalBody>
               <ModalFooter>
@@ -295,6 +386,7 @@ const useStyles = makeStyles({
                           <TableCell>Tanggal mulai</TableCell>
                           <TableCell>Tanggal berakhir</TableCell>
                           <TableCell>Harga</TableCell>
+                          <TableCell>Capacity</TableCell>
                           <TableCell style={{width:'300px'}}>Description</TableCell>
                           <TableCell >action</TableCell>
                         </TableRow>
@@ -306,6 +398,35 @@ const useStyles = makeStyles({
                 </TableContainer>
               </Paper>
           </div>
+          <Modal style={{marginTop: 80}} isOpen={modalPhoto} toggle={toggleAddPhoto} >
+              <ModalHeader toggle={toggleAddPhoto}>Add Photo</ModalHeader>
+              <ModalBody>
+                {
+                  photo.map((val, index) => {
+                    if (val) {
+                      return (
+                        <>
+                          <CustomInput label={val.name} type="file" className="form-control" onChange={(e) => onInputFilePhotoChange(e, index)} name={index} />
+                          <div>
+                            <img src={URL.createObjectURL(val)} alt={index} height="200" /> 
+                          </div>
+                        </>
+                      )
+                    } 
+                    return (
+                      <>
+                        <CustomInput type="file" onChange={(e) => onInputFilePhotoChange(e, index)} className="form-control" />
+                      </>
+                    )
+                  })
+                }
+                {/* <button onClick={AddPhoto}>+</button> */}
+              </ModalBody>
+              <ModalFooter>
+                  <Button color="primary" onClick={onAddPhotoProduct}>Do Something</Button>
+                  <Button color="secondary" onClick={toggleAddPhoto}>Cancel</Button>
+              </ModalFooter>
+          </Modal>
         </>
     );
   

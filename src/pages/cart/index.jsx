@@ -2,7 +2,7 @@ import React, { Component, createRef } from 'react';
 import Header from '../../components/Header'
 import {connect} from 'react-redux'
 import Axios from 'axios'
-import { API_URL, priceFormatter,credit } from '../../helpers/idrformat';
+import { API_URL, priceFormatter,credit, API_URL_BE } from '../../helpers/idrformat';
 import Notfound from './../notfound'
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -21,16 +21,15 @@ class Cart extends Component {
         cart:[],
         isOpen:false,
         pilihan:0,
-        bukti:createRef(),
+        bukti:null,
         cc:createRef()
     }
     componentDidMount(){
         // Axios.get(`${API_URL}/carts?userId=${this.props.id}&_expand=product`)
         console.log(this.props.id)
-        Axios.get(`${API_URL}/carts`,{
-            params:{
-                userId:this.props.id,
-                _expand:'product'
+        Axios.get(`${API_URL_BE}/transaction/cart`, {
+            params: {
+                users_id: this.props.id
             }
         })
         .then((res)=>{
@@ -44,7 +43,7 @@ class Cart extends Component {
 
     renderTotalHarga=()=>{
         var total=this.state.cart.reduce((total,num)=>{
-            return total+(num.product.harga*num.qty)
+            return total+(num.price*num.qty)
         },0)
         return total
     }
@@ -54,15 +53,15 @@ class Cart extends Component {
             return(
                 <TableRow key={val.id}>
                     <TableCell>{index+1}</TableCell>
-                    <TableCell>{val.product.namatrip}</TableCell>
+                    <TableCell>{val.name}</TableCell>
                     <TableCell>
                         <div style={{maxWidth:'200px'}}>
-                            <img width='100%' height='100%' src={val.product.gambar} alt={val.product.namatrip}/>
+                            <img width='100%' height='100%' src={API_URL_BE + val.banner} alt={val.name}/>
                         </div>
                     </TableCell>
                     <TableCell>{val.qty}</TableCell>
-                    <TableCell>{priceFormatter(val.product.harga)}</TableCell>
-                    <TableCell>{priceFormatter(val.product.harga*val.qty)}</TableCell>
+                    <TableCell>{priceFormatter(val.price)}</TableCell>
+                    <TableCell>{priceFormatter(val.price*val.qty)}</TableCell>
                 </TableRow>
             )
         })
@@ -85,100 +84,136 @@ class Cart extends Component {
             alert('pilih dulu tipe pembayarannya bro')
         }
     }
+    
     onbayarpakeCC=()=>{
-        Axios.post(`${API_URL}/transactions`,{
-            status:'Completed',
-            userId:this.props.id,
-            tanggalPembayaran:new Date().getTime(),
-            metode:'cc',
-            buktipembayaran:this.state.cc.current.value
-        }).then((res)=>{
-            var arr=[]
-            this.state.cart.forEach((val)=>{
-                arr.push(Axios.post(`${API_URL}/transactionsdetails`,{
-                    transactionId:res.data.id,
-                    productId:val.productId,
-                    price: parseInt(val.product.harga),
-                    qty:val.qty
-                }))
-            })
-            Axios.all(arr).then((res1)=>{
-                var deletearr=[]
-                this.state.cart.forEach((val)=>{
-                    deletearr.push(Axios.delete(`${API_URL}/carts/${val.id}`))
-                })
-                Axios.all(deletearr)
-                .then(()=>{
-                    Axios.get(`${API_URL}/carts`,{
-                        params:{
-                            userId:this.props.id,
-                            _expand:'product'
-                        }
-                    })
-                    .then((res3)=>{
-                        console.log(res3.data)
-                        this.props.AddcartAction([])
-                        this.setState({cart:res3.data,isOpen:false})
-                    }).catch((err)=>{
-                        console.log(err)
-                    })
-                }).catch((Err)=>{
-                    console.log(Err)
-                })
-            }).catch((err)=>{
-                console.log(err)
-            })
-        }).catch((err)=>{
-
+        Axios.post(`${API_URL_BE}/transaction/paidCC`, {
+            transaction_id: this.state.cart[0].transaction_id,
+            ccNumber: this.state.cc.current.value
+        }, {
+            headers: {
+                'Authorization' : `Bearer ${this.props.token}`
+            }
+        }).then(res => {
+            if(res.data == 'success') {
+                this.props.AddcartAction([])
+                this.setState({cart: [], isOpen: false})
+            }
+        }).catch(err => {
+            console.log(err)
         })
+        // Axios.post(`${API_URL}/transactions`,{
+        //     status:'Completed',
+        //     userId:this.props.id,
+        //     tanggalPembayaran:new Date().getTime(),
+        //     metode:'cc',
+        //     buktipembayaran:this.state.cc.current.value
+        // }).then((res)=>{
+        //     var arr=[]
+        //     this.state.cart.forEach((val)=>{
+        //         arr.push(Axios.post(`${API_URL}/transactionsdetails`,{
+        //             transactionId:res.data.id,
+        //             productId:val.productId,
+        //             price: parseInt(val.product.harga),
+        //             qty:val.qty
+        //         }))
+        //     })
+        //     Axios.all(arr).then((res1)=>{
+        //         var deletearr=[]
+        //         this.state.cart.forEach((val)=>{
+        //             deletearr.push(Axios.delete(`${API_URL}/carts/${val.id}`))
+        //         })
+        //         Axios.all(deletearr)
+        //         .then(()=>{
+        //             Axios.get(`${API_URL}/carts`,{
+        //                 params:{
+        //                     userId:this.props.id,
+        //                     _expand:'product'
+        //                 }
+        //             })
+        //             .then((res3)=>{
+        //                 console.log(res3.data)
+        //                 this.props.AddcartAction([])
+        //                 this.setState({cart:res3.data,isOpen:false})
+        //             }).catch((err)=>{
+        //                 console.log(err)
+        //             })
+        //         }).catch((Err)=>{
+        //             console.log(Err)
+        //         })
+        //     }).catch((err)=>{
+        //         console.log(err)
+        //     })
+        // }).catch((err)=>{
+
+        // })
     }
+    
     onbayarpakebukti=()=>{
-        Axios.post(`${API_URL}/transactions`,{
-            status:'WaitingAdmin',
-            userId:this.props.id,
-            tanggalPembayaran:new Date().getTime(),
-            metode:'upload',
-            buktipembayaran:this.state.bukti.current.value
-        }).then((res)=>{
-            var arr=[]
-            this.state.cart.forEach((val)=>{
-                arr.push(Axios.post(`${API_URL}/transactionsdetails`,{
-                    transactionId:res.data.id,
-                    productId:val.productId,
-                    price: parseInt(val.product.harga),
-                    qty:val.qty
-                }))
-            })
-            Axios.all(arr).then((res1)=>{
-                var deletearr=[]
-                this.state.cart.forEach((val)=>{
-                    deletearr.push(Axios.delete(`${API_URL}/carts/${val.id}`))
-                })
-                Axios.all(deletearr)
-                .then(()=>{
-                    Axios.get(`${API_URL}/carts`,{
-                        params:{
-                            userId:this.props.id,
-                            _expand:'product'
-                        }
-                    })
-                    .then((res3)=>{
-                        console.log(res3.data)
-                        this.props.AddcartAction([])
-                        this.setState({cart:res3.data,isOpen:false})
-                    }).catch((err)=>{
-                        console.log(err)
-                    })
-                }).catch((Err)=>{
-                    console.log(Err)
-                })
-            }).catch((err)=>{
-                console.log(err)
-            })
-        }).catch((err)=>{
-
+        let formData = new FormData()
+        let options = {
+            headers: {
+                'Content-type': 'multipart/form-data',
+                'Authorization' : `Bearer ${this.props.token}`
+            }
+        }
+        formData.append('receipt', this.state.bukti)
+        formData.append('data', JSON.stringify({transaction_id: this.state.cart[0].transaction_id}))
+        Axios.post(`${API_URL_BE}/transaction/uploadPayment`, formData, options)
+        .then(res => {
+            if (res.data === "success") {
+                this.props.AddcartAction([])
+                this.setState({cart: [], isOpen: false})
+            }
+        }).catch(err => {
+            console.log(err)
         })
+        // Axios.post(`${API_URL}/transactions`,{
+        //     status:'WaitingAdmin',
+        //     userId:this.props.id,
+        //     tanggalPembayaran:new Date().getTime(),
+        //     metode:'upload',
+        //     buktipembayaran:this.state.bukti.current.value
+        // }).then((res)=>{
+        //     var arr=[]
+        //     this.state.cart.forEach((val)=>{
+        //         arr.push(Axios.post(`${API_URL}/transactionsdetails`,{
+        //             transactionId:res.data.id,
+        //             productId:val.productId,
+        //             price: parseInt(val.product.harga),
+        //             qty:val.qty
+        //         }))
+        //     })
+        //     Axios.all(arr).then((res1)=>{
+        //         var deletearr=[]
+        //         this.state.cart.forEach((val)=>{
+        //             deletearr.push(Axios.delete(`${API_URL}/carts/${val.id}`))
+        //         })
+        //         Axios.all(deletearr)
+        //         .then(()=>{
+        //             Axios.get(`${API_URL}/carts`,{
+        //                 params:{
+        //                     userId:this.props.id,
+        //                     _expand:'product'
+        //                 }
+        //             })
+        //             .then((res3)=>{
+        //                 console.log(res3.data)
+        //                 this.props.AddcartAction([])
+        //                 this.setState({cart:res3.data,isOpen:false})
+        //             }).catch((err)=>{
+        //                 console.log(err)
+        //             })
+        //         }).catch((Err)=>{
+        //             console.log(Err)
+        //         })
+        //     }).catch((err)=>{
+        //         console.log(err)
+        //     })
+        // }).catch((err)=>{
+
+        // })
     }
+    
     onCheckOutClick=()=>{
         this.setState({isOpen:true})
         // Axios.post(`${API_URL}/transactions`,{
@@ -226,7 +261,16 @@ class Cart extends Component {
         // })
     }
 
+    onInputFileChange = (e) => {
+        if(e.target.files[0]){
+          this.setState({bukti: e.target.files[0]})
+        }else{
+            this.setState({bukti: null})
+        }
+    }
+
     render() {
+        console.log(this.props.id)
         if(this.props.role==='user') {
             return (
                 <div>
@@ -243,7 +287,17 @@ class Cart extends Component {
                                 <input className='form-control' ref={this.state.cc} placeholder='masukkan cc'/>
                                 :
                                 this.state.pilihan==1?
-                                <input className='form-control' ref={this.state.bukti}  placeholder='input bukti pembayaran'/>
+                                <div>
+                                    <input className='form-control' type="file" onChange={this.onInputFileChange} placeholder='input bukti pembayaran'/>
+                                    {
+                                        this.state.bukti ?
+                                        <div>
+                                          <img src={URL.createObjectURL(this.state.bukti)} alt="bukti transfer" height="200" /> 
+                                        </div>
+                                        :
+                                        null
+                                    }
+                                </div>
                                 :
                                 null
                             }
